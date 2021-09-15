@@ -1,4 +1,7 @@
 require("dotenv").config();
+const indexRouter = require("./routes/index");
+const userRouter = require("./routes/user_api");
+const cookieParser = require("cookie-parser");
 
 const express = require("express"),
   bodyParser = require("body-parser"),
@@ -9,6 +12,14 @@ const express = require("express"),
   logger = require("./logger");
 
 const isProduction = process.env.NODE_ENV === "production";
+
+const mongoose = require("mongoose");
+
+const isMongooseConnectionProvided = process.env.NODE_ENV === "integration";
+
+if (!isMongooseConnectionProvided) {
+  mongoose.connect(process.env.MONGODB_URL);
+}
 
 const app = express();
 
@@ -22,8 +33,9 @@ if (process.env.NODE_ENV === "development") {
 }
 
 // routes
-const indexRouter = require("./routes/index");
 app.use("/", indexRouter);
+app.use("/api/user", userRouter);
+app.use(cookieParser());
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
